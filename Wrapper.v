@@ -21,7 +21,7 @@
 
 
 module Wrapper(
-    input sysclk//, input rst
+    input sysclk, input rst
     );
     
     //Data Memory Interface Connectors
@@ -36,7 +36,7 @@ module Wrapper(
     
     Processor processor(
         .clk(sysclk), 
-        //.rst(rst),
+        .rst(rst),
         //DM Interface
         .DMclka(DMclka), .DMena(DMena), .DMwea(DMwea),
         .DMaddra(DMaddra), .DMdina(DMdina),
