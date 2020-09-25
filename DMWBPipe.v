@@ -23,14 +23,14 @@
 module DMWBPipe(
     input clk,
     input [31:0] aluResult_DM,
-    output reg [31:0] aluResult_WB,
+    output reg [31:0] aluResult_WB = 0,
     input [31:0] DMResult_DM,
-    output reg [31:0] DMResult_WB,
+    output reg [31:0] DMResult_WB = 0,
     //Forwarding
     input [4 : 0] rd_DM,
-    output reg [4:0] rd_WB,
+    output reg [4:0] rd_WB = 0,
     input isWb_DM,
-    output reg isWb_WB
+    output reg isWb_WB = 0
     );
     
     always@(posedge clk)begin

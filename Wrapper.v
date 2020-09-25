@@ -36,7 +36,7 @@ module Wrapper(
     
     Processor processor(
         .clk(sysclk), 
-        .rst(rst),
+        //.rst(rst),
         //DM Interface
         .DMclka(DMclka), .DMena(DMena), .DMwea(DMwea),
         .DMaddra(DMaddra), .DMdina(DMdina),

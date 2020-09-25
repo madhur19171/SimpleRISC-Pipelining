@@ -1,5 +1,5 @@
 `timescale 1ns/1ns
-module Processor(input clk, input rst,
+module Processor(input clk,// input rst,
         //Data Memory Interfacing components:
    output DMclka, DMena, DMwea,
    output [6 : 0] DMaddra,
@@ -11,7 +11,7 @@ module Processor(input clk, input rst,
    input [31 : 0] IMdouta
     );
     
-  //wire rst;
+   wire rst;
    
    wire [31:0] immx, branchTarget, branchPC, aluResult,
 	       data, WriteData;
@@ -28,15 +28,6 @@ module Processor(input clk, input rst,
 	     
    //Data Memory Interfacing Declarations
 	      
-//  vio_1 vio (
-//  .clk(clk),                // input wire clk
-//  .probe_in0(pc),    // input wire [31 : 0] probe_in0
-//  .probe_in1(inst),    // input wire [31 : 0] probe_in1
-//  .probe_in2(op1),    // input wire [31 : 0] probe_in2
-//  .probe_in3(op2),    // input wire [31 : 0] probe_in3
-//  .probe_in4(WriteData),    // input wire [31 : 0] probe_in4
-//  .probe_out0(rst)  // output wire [0 : 0] probe_out0
-//);  
 
    wire[31:0] inst_IF, inst_OF, pc_IF, pc_OF;
    
@@ -53,6 +44,20 @@ module Processor(input clk, input rst,
    wire [4:0] rd_WB;
    wire isWb_WB;
    
+   wire [31 : 0] A_ALU, B_ALU;
+   wire [4 : 0] rs1_OF, rs2_OF, rs1_ALU, rs2_ALU;
+   
+   
+   
+    vio_1 vio (
+  .clk(clk),                // input wire clk
+  .probe_in0(pc_IF),    // input wire [31 : 0] probe_in0
+  .probe_in1(inst_OF),    // input wire [31 : 0] probe_in1
+  .probe_in2(op1_OF),    // input wire [31 : 0] probe_in2
+  .probe_in3(op2_OF),    // input wire [31 : 0] probe_in3
+  .probe_in4(WriteData),    // input wire [31 : 0] probe_in4
+  .probe_out0(rst)  // output wire [0 : 0] probe_out0
+);  
    
    IFUnit IF(.inst(inst_IF),.pc(pc_IF), .stop(stop),
 	     .clk(clock),.isBranchTaken(0),.branchPC(0),.rst(rst),
@@ -63,16 +68,18 @@ module Processor(input clk, input rst,
 	     
 	     IFOFPipe ifofpipe(
 	           .clk(clock),//
+	           .stop(stop),
 	           .inst_IF(inst_IF),//
 	           .inst_OF(inst_OF),//
 	           .pc_IF(pc_IF),//
 	           .pc_OF(pc_OF)//
 	     );
 	     
-   OFUnit OF(.immx(immx),.branchTarget(branchTarget),.op1(op1_OF),.op2(op2_OF),.opcodeI(opcodeI), .rd(rd_OF),
-	     .clk(clock) , .pc(pc_OF),.inst(inst_OF),.isSt(signal[1]),.isRet(signal[5]),.isWb(isWb_WB),
+   OFUnit OF(.immx(immx),.branchTarget(branchTarget),.op1(op1_OF),.op2(op2_OF),.opcodeI(opcodeI), .rd(rd_OF), .rs1(rs1_OF), .rs2(rs2_OF),
+	     .clk(clock) , .pc(pc_OF),.inst(inst_OF), .isImmediate(signal[6]), .isSt(signal[1]),.isRet(signal[5]),.isWb(isWb_WB),
 	     .WriteData(WriteData),.WP(WP));
-   
+	     
+	     
    assign aluSignals_OF = signal[22 : 10];
    assign isWb_OF = signal[7];
    
@@ -87,7 +94,11 @@ module Processor(input clk, input rst,
                 .rd_OF(rd_OF),//
                 .rd_ALU(rd_ALU),//
                 .isWb_OF(isWb_OF),//
-                .isWb_ALU(isWb_ALU)//
+                .isWb_ALU(isWb_ALU),//
+                .rs1_OF(rs1_OF),
+                .rs2_OF(rs2_OF),
+                .rs1_ALU(rs1_ALU),
+                .rs2_ALU(rs2_ALU)
         );
         
    BranchUnit BU(.branchPC(branchPC), .isBranchTaken(isBranchTaken),
@@ -96,7 +107,7 @@ module Processor(input clk, input rst,
 		  .flagsGT(flagsGT));
    
    ALUUnit ALU(.aluResult(aluResult_ALU), .flagsE(flagsE), .flagsGT(flagsGT),
-	        .op1(op1_ALU), .op2(op2_ALU), .immx(immx), .isImmediate(signal[6]), .aluSignals(aluSignals_ALU));
+	        .op1(A_ALU), .op2(B_ALU),  .aluSignals(aluSignals_ALU));
    
    ALUDMPipe aludmpipe(
         .clk(clock),//
@@ -138,8 +149,15 @@ module Processor(input clk, input rst,
    ControlUnit CU(.signal(signal)
 		  ,.opcodeI(opcodeI));
    
-  //FrequencyDivider FD1(.clk(clk), .clock(clock));
-  assign clock = clk;
+   
+   ForwardingUnit forwarding(.A(A_ALU), .B(B_ALU),
+                             .rd_DM(rd_DM), .rd_WB(rd_WB),
+                             .rs1_ALU(rs1_ALU), .rs2_ALU(rs2_ALU),
+                             .op1_ALU(op1_ALU), .op2_ALU(op2_ALU),
+                             .result_DM(aluResult_DM), .result_WB(WriteData)
+   );
+  FrequencyDivider FD1(.clk(clk), .clock(clock));
+  //assign clock = clk;
    
 endmodule // DFF
 

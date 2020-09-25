@@ -19,7 +19,7 @@ module IFUnit(inst,pc, stop,
    output [6 : 0] IMaddra;
    output IMclka;
    
-   assign stop = inst[31:27] == 5'b11111; 
+   assign stop = inst[31:27] == 5'b11111;
    
    //Instruction Memory Ports Assignmnets
    assign IMclka = clk;     //IM is triggered to read instruction only on 
@@ -35,6 +35,8 @@ module IFUnit(inst,pc, stop,
          pc <= 0;
       else if(isBranchTaken)
          pc <= branchPC;
+      else if(inst[31:27] == 5'b11111)  //Stops PC increment on Read Instruction
+         pc <= pc;
       else
          pc <= pc + 1;
    end

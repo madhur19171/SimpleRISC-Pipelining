@@ -7,7 +7,7 @@ module FrequencyDivider(
     output reg clock = 0
     );
     parameter N = 31;
-    parameter limit = 250000;
+    parameter limit = 2500000;
     //parameter limit = 27'd1250;
     reg [N:0] count; 
     wire clk_5M; 

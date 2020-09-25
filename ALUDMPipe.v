@@ -23,14 +23,14 @@
 module ALUDMPipe(
     input clk,
     input [31:0] aluResult_ALU,
-    output reg [31:0] aluResult_DM,
+    output reg [31:0] aluResult_DM = 0,
     input [31:0] op2_ALU,
-    output reg [31:0] op2_DM,
+    output reg [31:0] op2_DM = 0,
     //Forwarding
     input [4 : 0] rd_ALU,
-    output reg [4:0] rd_DM,
+    output reg [4:0] rd_DM = 0,
     input isWb_ALU,
-    output reg isWb_DM
+    output reg isWb_DM = 0
     );
     
     always @(posedge clk)begin

@@ -22,14 +22,19 @@
 
 module IFOFPipe(
     input clk,
+    input stop,
     input [31:0] inst_IF,
-    output reg [31:0] inst_OF,
+    output reg [31:0] inst_OF = 0,
     input [31:0] pc_IF,
-    output reg [31:0] pc_OF
+    output reg [31:0] pc_OF = 0
     );
+    reg state = 0;
     
     always @(posedge clk) begin
+        if(!state) begin
             inst_OF <= inst_IF;
             pc_OF <= pc_IF;
+            state <= stop;
         end
+    end
 endmodule
