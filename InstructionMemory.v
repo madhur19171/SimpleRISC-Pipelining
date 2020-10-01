@@ -20,10 +20,19 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module IM(
+module IM #(parameter N = 7)(
     input clka,
-    input[6 : 0] addra,
-    output[31:0] douta
+    input[N - 1 : 0] addra,
+    output reg [31:0] douta = 0
     );
-    InstructionMemory instruction_memory(.clka(clka), .douta(douta), .addra(addra));
+    //InstructionMemory instruction_memory(.clka(clka), .douta(douta), .addra(addra));
+    
+    reg [31 : 0] instructionmemory[2 ** N - 1 : 0];
+    
+    initial
+        $readmemb("Factorial.mem", instructionmemory);
+    
+    always @(posedge clka) begin
+        douta <= instructionmemory[addra];
+    end
 endmodule

@@ -1,5 +1,5 @@
 `timescale 1ns/1ns
-module Processor(input clk,// input rst,
+module Processor(input clk, input rst,
         //Data Memory Interfacing components:
    output DMclka, DMena, DMwea,
    output [6 : 0] DMaddra,
@@ -11,7 +11,7 @@ module Processor(input clk,// input rst,
    input [31 : 0] IMdouta
     );
     
-   wire rst;
+   //wire rst;
    
    wire [31:0] immx, branchTarget, branchPC, aluResult,
 	       data, WriteData;
@@ -49,15 +49,15 @@ module Processor(input clk,// input rst,
    
    
    
-    vio_1 vio (
-  .clk(clk),                // input wire clk
-  .probe_in0(pc_IF),    // input wire [31 : 0] probe_in0
-  .probe_in1(inst_OF),    // input wire [31 : 0] probe_in1
-  .probe_in2(op1_OF),    // input wire [31 : 0] probe_in2
-  .probe_in3(op2_OF),    // input wire [31 : 0] probe_in3
-  .probe_in4(WriteData),    // input wire [31 : 0] probe_in4
-  .probe_out0(rst)  // output wire [0 : 0] probe_out0
-);  
+//    vio_1 vio (
+//  .clk(clk),                // input wire clk
+//  .probe_in0(pc_IF),    // input wire [31 : 0] probe_in0
+//  .probe_in1(inst_OF),    // input wire [31 : 0] probe_in1
+//  .probe_in2(op1_OF),    // input wire [31 : 0] probe_in2
+//  .probe_in3(op2_OF),    // input wire [31 : 0] probe_in3
+//  .probe_in4(WriteData),    // input wire [31 : 0] probe_in4
+//  .probe_out0(rst)  // output wire [0 : 0] probe_out0
+//);  
    
    IFUnit IF(.inst(inst_IF),.pc(pc_IF), .stop(stop),
 	     .clk(clock),.isBranchTaken(0),.branchPC(0),.rst(rst),
@@ -156,8 +156,8 @@ module Processor(input clk,// input rst,
                              .op1_ALU(op1_ALU), .op2_ALU(op2_ALU),
                              .result_DM(aluResult_DM), .result_WB(WriteData)
    );
-  FrequencyDivider FD1(.clk(clk), .clock(clock));
-  //assign clock = clk;
+  //FrequencyDivider FD1(.clk(clk), .clock(clock));
+  assign clock = clk;
    
 endmodule // DFF
 

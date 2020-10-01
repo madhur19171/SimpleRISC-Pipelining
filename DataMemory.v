@@ -20,22 +20,43 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module DM(
+module DM #(parameter N = 7)(
     douta,
     clka, ena, wea, addra, dina
     );
     
     input clka, ena, wea;
-    input [6 : 0] addra;
+    input [N - 1 : 0] addra;
     input [31 : 0] dina;
-    output [31 : 0] douta;
+    output reg [31 : 0] douta;
     
-   DataMemory datamemory (
-  .clka(clka),    // input wire clka
-  .ena(ena),      // input wire ena
-  .wea(wea),      // input wire [0 : 0] wea
-  .addra(addra),  // input wire [6 : 0] addra
-  .dina(dina),    // input wire [31 : 0] dina
-  .douta(douta)  // output wire [31 : 0] douta
-);
+    reg [31 : 0] datamemory[2 ** N - 1 : 0];
+    integer i;
+    
+//   DataMemory datamemory (
+//  .clka(clka),    // input wire clka
+//  .ena(ena),      // input wire ena
+//  .wea(wea),      // input wire [0 : 0] wea
+//  .addra(addra),  // input wire [6 : 0] addra
+//  .dina(dina),    // input wire [31 : 0] dina
+//  .douta(douta)  // output wire [31 : 0] douta
+//);
+
+
+initial begin
+        for(i = 0; i <= 2 ** N - 1; i = i + 1)begin
+            datamemory[i] = 0;
+        end
+   end
+   
+    always@(posedge clka) begin
+        if(ena) begin
+            if(wea)begin
+                douta <= dina;
+                datamemory[addra] <= dina;
+              end
+            else
+                douta <= datamemory[addra];
+         end
+    end
 endmodule
