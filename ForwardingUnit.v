@@ -25,25 +25,25 @@ output reg  [31 : 0]A = 0,
 output reg  [31 : 0]B = 0,
 input [4 : 0] rd_DM,
 input [4 : 0] rd_WB,
-input [4 : 0] rs1_ALU, rs2_ALU,
-input [31 : 0] op1_ALU, op2_ALU,
+input [4 : 0] RP1_ALU, RP2_ALU,
+input [31 : 0] A_ALU, B_ALU,
 input [31 : 0] result_DM,
 input [31 : 0] result_WB
     );
     
     always@(*)begin
-        if(rs1_ALU == rd_DM && rd_DM != 0)
+        if(RP1_ALU == rd_DM && rd_DM != 0)
             A = result_DM;
-        else if(rs1_ALU == rd_WB && rd_WB != 0)
+        else if(RP1_ALU == rd_WB && rd_WB != 0)
             A = result_WB;
         else
-            A = op1_ALU;
+            A = A_ALU;
             
-        if(rs2_ALU == rd_DM  && rd_DM != 0)
+        if(RP2_ALU == rd_DM  && rd_DM != 0)
             B = result_DM;
-        else if(rs2_ALU == rd_WB && rd_WB != 0)
+        else if(RP2_ALU == rd_WB && rd_WB != 0)
             B = result_WB;
         else
-            B = op2_ALU;
+            B = B_ALU;
     end
 endmodule

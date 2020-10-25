@@ -1,23 +1,23 @@
 `timescale 1s/1ms
-module OFUnit(PC_ena, immx,branchTarget,op1,op2,opcodeI, rd, rs1, rs2,
+module OFUnit(stop, immx,branchTarget,op1,op2, A, B,opcodeI, rd, RP1, RP2,
 	      clk, pc,inst,isImmediate, isSt,isRet,isWb,WriteData,WP
 	      );
-   input  PC_ena, clk, isSt, isRet, isWb, isImmediate;
+   input  stop, clk, isSt, isRet, isWb, isImmediate;
    input [31:0] inst, WriteData, pc;
    input [4:0] 	WP;   //Write Port
 
 
-   output [31:0] immx, branchTarget, op2;
-   output reg [31:0] op1;
+   output [31:0] immx, branchTarget, A, B;
+   output reg [31:0] op1, op2;
    output [5:0]  opcodeI;
-   output [4:0] rd, rs1, rs2;
+   output [4:0] rd;
   
 
     integer i;
-   wire [4:0] 	 RP1, RP2;
+   output [4:0] 	 RP1, RP2;
    wire [31:0] 	 signExtend;
    
-   reg [31:0] RegisterFile[31:0], op2_temp;
+   reg [31:0] RegisterFile[31:0];
 
 
    initial begin
@@ -42,17 +42,18 @@ module OFUnit(PC_ena, immx,branchTarget,op1,op2,opcodeI, rd, rs1, rs2,
 //  .doutb(op2)  // output wire [31 : 0] doutb
 //);
 
-    assign PC_ena = inst[31 : 27] != 5'b11111;
+    assign stop = inst[31 : 27] == 5'b11111;
     assign RP1 = (isRet)?  31 : inst[20:16];
     assign RP2 = (isSt) ? inst[25:21] : inst[15:11];
     assign rd = inst[25:21];
-    assign rs1 = RP1;
-    assign rs2 = RP2;
+
+    assign A = op1;
+    assign B = isImmediate ? immx : op2;
     
     
     always @(*)begin
         op1 <= RegisterFile[RP1];
-        op2_temp <= RegisterFile[RP2];
+        op2 <= RegisterFile[RP2];
     end
     
     always @(posedge clk)
@@ -63,7 +64,5 @@ module OFUnit(PC_ena, immx,branchTarget,op1,op2,opcodeI, rd, rs1, rs2,
    assign branchTarget = pc + signExtend;
    assign immx = {{16{inst[15]}}, inst[15:0]};
    assign opcodeI = {inst[31:27], inst[26]};
-   
-   assign op2 = isImmediate ? immx : op2_temp;
 endmodule // DFF
 

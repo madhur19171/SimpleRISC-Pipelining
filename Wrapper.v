@@ -25,7 +25,7 @@ module Wrapper(
     );
     
     //Data Memory Interface Connectors
-    wire DMclka, DMena, DMwea;
+    wire DMclka, DMena, DMwea, DMdone;
     wire [6 : 0] DMaddra;
     wire [31:0] DMdina, DMdouta;
     
@@ -40,7 +40,7 @@ module Wrapper(
         //DM Interface
         .DMclka(DMclka), .DMena(DMena), .DMwea(DMwea),
         .DMaddra(DMaddra), .DMdina(DMdina),
-        .DMdouta(DMdouta),
+        .DMdouta(DMdouta), .DMdone(DMdone),
         
         //IM Interface
         .IMdouta(IMdouta),
@@ -50,7 +50,7 @@ module Wrapper(
     DM datamemory(
     .clka(DMclka), .ena(DMena), .wea(DMwea),
     .addra(DMaddra), .dina(DMdina), 
-    .douta(DMdouta)
+    .douta(DMdouta), .done(DMdone)
     );
     
     IM instruction_memory(

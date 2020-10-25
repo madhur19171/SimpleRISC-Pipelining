@@ -22,6 +22,11 @@
 
 module DMWBPipe(
     input clk,
+    input [31:0]inst_DM,
+    output reg [31:0]inst_WB,
+    input stall_DMWB,
+    input is_Ld_DM,
+    output reg is_Ld_WB,
     input [31:0] aluResult_DM,
     output reg [31:0] aluResult_WB = 0,
     input [31:0] DMResult_DM,
@@ -34,10 +39,14 @@ module DMWBPipe(
     );
     
     always@(posedge clk)begin
-        aluResult_WB <= aluResult_DM;
-        DMResult_WB <= DMResult_DM;
-        //Forwarding
-        rd_WB <= rd_DM;
-        isWb_WB <= isWb_DM;
+        if(~stall_DMWB) begin
+                inst_WB <= inst_DM;
+                is_Ld_WB <= is_Ld_DM;
+                aluResult_WB <= aluResult_DM;
+                DMResult_WB <= DMResult_DM;
+                //Forwarding
+                rd_WB <= rd_DM;
+                isWb_WB <= isWb_DM;
+            end
     end
 endmodule

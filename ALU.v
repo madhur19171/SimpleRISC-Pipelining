@@ -1,14 +1,14 @@
 `timescale 1s/1ms
 module ALUUnit(aluResult, flagsE, flagsGT,
-	       op1, op2, aluSignals);
-   input[31:0] op1, op2;
+	       A_ALU, B_ALU, aluSignals);
+   input[31:0] A_ALU, B_ALU;
    input [12:0] aluSignals;
    output wire [31:0] aluResult;
    output reg	 flagsE, flagsGT;
    wire [31:0] 	 A, B;
    wire [31:0] 	 ADD, MUL, DIV, SHI, LOG, MOV;
-   assign A = op1;
-   assign B = op2;
+   assign A = A_ALU;
+   assign B = B_ALU;
    
    always @(*)
         if(aluSignals[2]) begin

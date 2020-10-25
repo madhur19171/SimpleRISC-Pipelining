@@ -1,6 +1,6 @@
 `timescale 1s/1ms
-module IFUnit(inst,pc, stop,
-          clk,
+module IFUnit(inst,pc,
+          clk,  stop,
 	      isBranchTaken,branchPC,rst,
 	      //Instruction Memory Interface:
 	      IMclka, IMaddra,
@@ -12,14 +12,13 @@ module IFUnit(inst,pc, stop,
    input [31:0] branchPC;
    output [31:0] inst;
    output reg [31:0] 	    pc;
-   output stop;
+   input stop;
    
    //To be dent to Instruction Memory:
    input [31 : 0] IMdouta;
    output [6 : 0] IMaddra;
    output IMclka;
    
-   assign stop = inst[31:27] == 5'b11111;
    
    //Instruction Memory Ports Assignmnets
    assign IMclka = clk;     //IM is triggered to read instruction only on 
@@ -30,12 +29,12 @@ module IFUnit(inst,pc, stop,
    assign inst = IMdouta;       //Data received from IM is the Instruction and assigned to inst
    
    
-   always @(negedge clk, posedge rst) begin
+   always @(posedge clk, posedge rst) begin
       if(rst)
          pc <= 0;
       else if(isBranchTaken)
          pc <= branchPC;
-      else if(inst[31:27] == 5'b11111)  //Stops PC increment on Read Instruction
+      else if(stop)  //Stops PC increment on Read Instruction
          pc <= pc;
       else
          pc <= pc + 1;

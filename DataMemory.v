@@ -21,7 +21,7 @@
 
 
 module DM #(parameter N = 7)(
-    douta,
+    douta, done,
     clka, ena, wea, addra, dina
     );
     
@@ -29,6 +29,7 @@ module DM #(parameter N = 7)(
     input [N - 1 : 0] addra;
     input [31 : 0] dina;
     output reg [31 : 0] douta;
+    output reg done;
     
     reg [31 : 0] datamemory[2 ** N - 1 : 0];
     integer i;
@@ -54,9 +55,14 @@ initial begin
             if(wea)begin
                 douta <= dina;
                 datamemory[addra] <= dina;
+                done <= 0;
               end
-            else
+            else begin
                 douta <= datamemory[addra];
+                done <= 1;
+                end
          end
+         else 
+            done <= 0;
     end
 endmodule
