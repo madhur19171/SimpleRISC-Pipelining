@@ -52,6 +52,9 @@ module Processor(input clk, input rst,
    wire stall_IFOF, stall_OFALU, stall_ALUDM, stall_DMWB;
    wire is_Ld_OF, is_St_OF, is_Ld_ALU, is_St_ALU, is_Ld_DM, is_St_DM, is_Ld_WB;
    
+   wire[31:0] immx_ALU;
+   wire isImmediate_ALU;
+   
    
    
 //    vio_1 vio (
@@ -93,6 +96,10 @@ module Processor(input clk, input rst,
    
         OFALUPipe ofalupipe(
                 .clk(clock),//
+                .immx_OF(immx),
+                .immx_ALU(immx_ALU),
+                .isImmediate_OF(signal[6]),
+                .isImmediate_ALU(isImmediate_ALU),
                 .inst_OF(inst_OF),
                 .inst_ALU(inst_ALU),
                 .stall_OFALU(stall_OFALU),
@@ -125,7 +132,7 @@ module Processor(input clk, input rst,
 		 .isRet(signal[5]), .isUBranch(signal[8]), .isBeq(signal[3]), .flagsE(flagsE), .isBgt(signal[4]),
 		  .flagsGT(flagsGT));
    
-   ALUUnit ALU(.aluResult(aluResult_ALU), .flagsE(flagsE), .flagsGT(flagsGT),
+   ALUUnit ALU(.immx(immx_ALU), .isImmediate(isImmediate_ALU), .aluResult(aluResult_ALU), .flagsE(flagsE), .flagsGT(flagsGT),
 	        .A_ALU(A_FWD), .B_ALU(B_FWD),  .aluSignals(aluSignals_ALU));
    
    ALUDMPipe aludmpipe(
@@ -187,7 +194,7 @@ module Processor(input clk, input rst,
                              .rd_DM(rd_DM), .rd_WB(rd_WB),
                              .RP1_ALU(RP1_ALU), .RP2_ALU(RP2_ALU),
                              .A_ALU(A_ALU), .B_ALU(B_ALU),
-                             .result_DM(aluResult_DM), .result_WB(WriteData)
+                             .result_DM(is_Ld_DM ? DMResult_DM : aluResult_DM), .result_WB(WriteData)
    );
    
    Stall_Unit stallunit(

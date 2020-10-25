@@ -22,6 +22,10 @@
 
 module OFALUPipe(
     input clk,
+    input isImmediate_OF,
+    output reg isImmediate_ALU,
+    input [31:0] immx_OF,
+    output reg [31:0] immx_ALU = 0,
     input [31:0]inst_OF,
     output reg [31:0]inst_ALU,
     input stall_OFALU,
@@ -53,6 +57,8 @@ module OFALUPipe(
     
     always @(posedge clk)begin
         if(~stall_OFALU)begin
+            isImmediate_ALU <= isImmediate_OF;
+            immx_ALU <= immx_OF;
             inst_ALU <= inst_OF;
             is_Ld_ALU <= is_Ld_OF;
             is_St_ALU <= is_St_OF;

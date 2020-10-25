@@ -48,7 +48,8 @@ module OFUnit(stop, immx,branchTarget,op1,op2, A, B,opcodeI, rd, RP1, RP2,
     assign rd = inst[25:21];
 
     assign A = op1;
-    assign B = isImmediate ? immx : op2;
+    assign B = op2;
+    //assign B = isImmediate ? immx : op2;
     
     
     always @(*)begin

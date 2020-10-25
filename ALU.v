@@ -1,14 +1,15 @@
 `timescale 1s/1ms
 module ALUUnit(aluResult, flagsE, flagsGT,
-	       A_ALU, B_ALU, aluSignals);
-   input[31:0] A_ALU, B_ALU;
+	       isImmediate, immx, A_ALU, B_ALU, aluSignals);
+   input[31:0] immx, A_ALU, B_ALU;
+   input isImmediate;
    input [12:0] aluSignals;
    output wire [31:0] aluResult;
    output reg	 flagsE, flagsGT;
    wire [31:0] 	 A, B;
    wire [31:0] 	 ADD, MUL, DIV, SHI, LOG, MOV;
    assign A = A_ALU;
-   assign B = B_ALU;
+   assign B = isImmediate ? immx : B_ALU;
    
    always @(*)
         if(aluSignals[2]) begin

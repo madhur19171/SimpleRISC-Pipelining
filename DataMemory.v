@@ -29,9 +29,10 @@ module DM #(parameter N = 7)(
     input [N - 1 : 0] addra;
     input [31 : 0] dina;
     output reg [31 : 0] douta;
-    output reg done;
+    output done;
     
     reg [31 : 0] datamemory[2 ** N - 1 : 0];
+    wire Ld;
     integer i;
     
 //   DataMemory datamemory (
@@ -55,14 +56,33 @@ initial begin
             if(wea)begin
                 douta <= dina;
                 datamemory[addra] <= dina;
-                done <= 0;
+                //done <= 0;
               end
             else begin
                 douta <= datamemory[addra];
-                done <= 1;
+                //done <= 1;
                 end
          end
-         else 
-            done <= 0;
+         //else 
+            //done <= 0;
     end
+    
+    assign Ld = ena & ~wea;
+    
+    reg state = 0, next;
+    
+    always@(posedge clka) begin
+        state <= next;
+    end
+    
+    always@(*)
+        case(state)
+            0 : next = Ld ? 1 : 0;
+            1 : next = 0;
+            default : next = 0;
+        endcase
+        
+        
+    assign done = state;
+    
 endmodule
