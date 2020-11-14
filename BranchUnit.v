@@ -1,12 +1,12 @@
 `timescale 1s/1ms
 module BranchUnit(branchPC, isBranchTaken,
-		  branchTarget, op1, isRet, isUBranch, isBeq, flagsE, isBgt, flagsGT);
-   input [31:0] branchTarget, op1;
-   input 	isUBranch, isBeq, isBgt, flagsGT, flagsE, isRet;
+		  pc_ALU, immx_ALU, isUBranch_ALU, isBeq_ALU, flagsE, isBgt_ALU, flagsGT);
+   input [31:0] pc_ALU, immx_ALU;
+   input 	isUBranch_ALU, isBeq_ALU, isBgt_ALU, flagsGT, flagsE;
    output [31:0] branchPC;
    output 	 isBranchTaken;
-   assign branchPC = (isRet) ? op1 : branchTarget;
-   assign isBranchTaken = isUBranch | (isBeq & flagsE) | (isBgt & flagsGT);
+   assign branchPC = pc_ALU + immx_ALU;
+   assign isBranchTaken = isUBranch_ALU | (isBeq_ALU & flagsE) | (isBgt_ALU & flagsGT);
 endmodule // DFF
 
 

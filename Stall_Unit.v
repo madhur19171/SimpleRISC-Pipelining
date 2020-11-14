@@ -28,7 +28,8 @@ module Stall_Unit(
     output reg stall_IFOF,
     output reg stall_OFALU,
     output reg stall_ALUDM,
-    output reg stall_DMWB
+    output reg stall_DMWB,
+    output reg stall_WBEXT
     );
     
     always @(*) begin
@@ -37,6 +38,7 @@ module Stall_Unit(
             stall_OFALU = 1;
             stall_ALUDM = 1;
             stall_DMWB = 1;
+            stall_WBEXT = 1;
         end 
         else
             if(is_Ld ) begin
@@ -45,12 +47,14 @@ module Stall_Unit(
                     stall_OFALU = 1;
                     stall_ALUDM = 1;
                     stall_DMWB = 1;
+                    stall_WBEXT = 1;
                 end
                 else begin
                     stall_IFOF = 0;
                     stall_OFALU = 0;
                     stall_ALUDM = 0;
                     stall_DMWB = 0;
+                    stall_WBEXT = 0;
                 end
                     
             end
@@ -59,6 +63,7 @@ module Stall_Unit(
                 stall_OFALU = 0;
                 stall_ALUDM = 0;
                 stall_DMWB = 0;
+                stall_WBEXT = 0;
             end
     end
     

@@ -3,9 +3,9 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 15.09.2020 23:13:56
+// Create Date: 14.11.2020 11:05:34
 // Design Name: 
-// Module Name: IFOFPipe
+// Module Name: WBEXTPipe
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -20,20 +20,19 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module IFOFPipe(
+module WBEXTPipe(
     input clk,
-    input stall_IFOF,
-    input [31:0] inst_IF,
-    output reg [31:0] inst_OF = 0,
-    input [31:0] pc_IF,
-    output reg [31:0] pc_OF = 0
+    input stall_WBEXT,
+    input [4:0] rd_WB,
+    output  reg[4:0] rd_EXT,
+    input [31:0] WriteData_WB,
+    output reg[31:0] WriteData_EXT
     );
-    reg[31:0] shift = 0;
-    always @(posedge clk) begin
-        if(~stall_IFOF) begin
-            inst_OF <= inst_IF;
-            shift <= pc_IF;
-            pc_OF <= shift;
-            end
+    
+    always@(posedge clk)begin
+        if(~stall_WBEXT)begin
+            rd_EXT <= rd_WB;
+            WriteData_EXT <= WriteData_WB;
+        end
     end
 endmodule

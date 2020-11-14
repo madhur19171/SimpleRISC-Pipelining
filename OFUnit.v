@@ -1,8 +1,8 @@
 `timescale 1s/1ms
-module OFUnit(stop, immx,branchTarget,op1,op2, A, B,opcodeI, rd, RP1, RP2,
+module OFUnit(stop, flush, immx,branchTarget,op1,op2, A, B,opcodeI, rd, RP1, RP2,
 	      clk, pc,inst,isImmediate, isSt,isRet,isWb,WriteData,WP
 	      );
-   input  stop, clk, isSt, isRet, isWb, isImmediate;
+   input  clk, isSt, isRet, isWb, isImmediate, flush;
    input [31:0] inst, WriteData, pc;
    input [4:0] 	WP;   //Write Port
 
@@ -11,6 +11,7 @@ module OFUnit(stop, immx,branchTarget,op1,op2, A, B,opcodeI, rd, RP1, RP2,
    output reg [31:0] op1, op2;
    output [5:0]  opcodeI;
    output [4:0] rd;
+   output stop;
   
 
     integer i;
@@ -42,7 +43,7 @@ module OFUnit(stop, immx,branchTarget,op1,op2, A, B,opcodeI, rd, RP1, RP2,
 //  .doutb(op2)  // output wire [31 : 0] doutb
 //);
 
-    assign stop = inst[31 : 27] == 5'b11111;
+    assign stop = inst[31 : 27] == 5'b11111 && ~flush;
     assign RP1 = (isRet)?  31 : inst[20:16];
     assign RP2 = (isSt) ? inst[25:21] : inst[15:11];
     assign rd = inst[25:21];

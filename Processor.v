@@ -30,7 +30,7 @@ module Processor(input clk, input rst,
    //Data Memory Interfacing Declarations
 	      
 
-   wire[31:0] inst_IF, inst_OF, inst_ALU, inst_DM, inst_WB, pc_IF, pc_OF;
+   wire[31:0] inst_IF, inst_OF, inst_ALU, inst_DM, inst_WB, pc_IF, pc_OF, pc_ALU;
    
    wire [31 : 0] op1_OF, op1_ALU, op2_OF, op2_ALU;
    wire [12 : 0] aluSignals_OF, aluSignals_ALU;
@@ -45,15 +45,22 @@ module Processor(input clk, input rst,
    wire [4:0] rd_WB;
    wire isWb_WB;
    
+   wire [4:0] rd_EXT;
+   wire [31:0] WriteData_EXT;
+   
    wire [31 : 0] B_DM, A_ALU, B_ALU, A_OF, B_OF, A_FWD, B_FWD;
    wire [4 : 0] RP1_OF, RP2_OF, RP1_ALU, RP2_ALU;
    
    
-   wire stall_IFOF, stall_OFALU, stall_ALUDM, stall_DMWB;
+   wire stall_IFOF, stall_OFALU, stall_ALUDM, stall_DMWB, stall_WBEXT;
    wire is_Ld_OF, is_St_OF, is_Ld_ALU, is_St_ALU, is_Ld_DM, is_St_DM, is_Ld_WB;
    
    wire[31:0] immx_ALU;
    wire isImmediate_ALU;
+   
+   wire isBeq_OF, isBeq_ALU, isBgt_OF, isBgt_ALU, isUBranch_OF, isUBranch_ALU;
+   
+   wire flush;
    
    
    
@@ -73,7 +80,7 @@ module Processor(input clk, input rst,
    assign is_St_OF = signal[1];
    
    IFUnit IF(.inst(inst_IF),.pc(pc_IF), .stop(stop),
-	     .clk(clock),.isBranchTaken(0),.branchPC(0),.rst(rst),
+	     .clk(clock),.isBranchTaken(isBranchTaken),.branchPC(branchPC),.rst(rst),
 	     //Instruction Memory Interface
 	     .IMclka(IMclka), .IMaddra(IMaddra),
 	     .IMdouta(IMdouta)
@@ -88,20 +95,33 @@ module Processor(input clk, input rst,
 	           .pc_OF(pc_OF)//
 	     );
 	     
-   OFUnit OF(.stop(stop), .immx(immx),.branchTarget(branchTarget),.op1(op1_OF),.op2(op2_OF), .A(A_OF), .B(B_OF), .opcodeI(opcodeI), .rd(rd_OF), .RP1(RP1_OF), .RP2(RP2_OF),
-	     .clk(clock) , .pc(pc_OF),.inst(inst_OF), .isImmediate(signal[6]), .isSt(is_St_OF),.isRet(signal[5]),.isWb(isWb_WB),
-	     .WriteData(WriteData),.WP(WP));
+   OFUnit OF(.stop(stop), .flush(flush), .immx(immx),.branchTarget(branchTarget),.op1(op1_OF),.op2(op2_OF), .A(A_OF), .B(B_OF),
+             .opcodeI(opcodeI), .rd(rd_OF), .RP1(RP1_OF), .RP2(RP2_OF),
+	         .clk(clock) , .pc(pc_OF),.inst(inst_OF), .isImmediate(signal[6]),
+	         .isSt(is_St_OF),.isRet(signal[5]),.isWb(isWb_WB),
+	         .WriteData(WriteData),.WP(WP));
 	     
-	     
-   
+	    assign isBeq_OF = signal[3];
+	    assign isBgt_OF = signal[4];
+	    assign isUBranch_OF = signal[8];
+	    
         OFALUPipe ofalupipe(
                 .clk(clock),//
+                .flush(flush),
                 .immx_OF(immx),
                 .immx_ALU(immx_ALU),
                 .isImmediate_OF(signal[6]),
                 .isImmediate_ALU(isImmediate_ALU),
+                .pc_OF(pc_OF),
+                .pc_ALU(pc_ALU),
                 .inst_OF(inst_OF),
                 .inst_ALU(inst_ALU),
+                .isBeq_OF(isBeq_OF),
+                .isBeq_ALU(isBeq_ALU),
+                .isBgt_OF(isBgt_OF),
+                .isBgt_ALU(isBgt_ALU),
+                .isUBranch_OF(isUBranch_OF),
+                .isUBranch_ALU(isUBranch_ALU),
                 .stall_OFALU(stall_OFALU),
                 .is_Ld_OF(is_Ld_OF),
                 .is_Ld_ALU(is_Ld_ALU),
@@ -128,11 +148,14 @@ module Processor(input clk, input rst,
         );
         
    BranchUnit BU(.branchPC(branchPC), .isBranchTaken(isBranchTaken),
-		 .branchTarget(branchTarget), .op1(0), 
-		 .isRet(signal[5]), .isUBranch(signal[8]), .isBeq(signal[3]), .flagsE(flagsE), .isBgt(signal[4]),
-		  .flagsGT(flagsGT));
+                    .pc_ALU(pc_ALU), .immx_ALU(immx_ALU),
+                    .isUBranch_ALU(isUBranch_ALU), .isBeq_ALU(isBeq_ALU), .flagsE(flagsE),
+                    .isBgt_ALU(isBgt_ALU), .flagsGT(flagsGT));
+                    
+   FlushUnit flushunit(.clk(clk), .isBranchTaken(isBranchTaken), .flush(flush));
    
-   ALUUnit ALU(.immx(immx_ALU), .isImmediate(isImmediate_ALU), .aluResult(aluResult_ALU), .flagsE(flagsE), .flagsGT(flagsGT),
+   ALUUnit ALU(.immx(immx_ALU), .isImmediate(isImmediate_ALU),
+               .aluResult(aluResult_ALU), .flagsE(flagsE), .flagsGT(flagsGT),
 	        .A_ALU(A_FWD), .B_ALU(B_FWD),  .aluSignals(aluSignals_ALU));
    
    ALUDMPipe aludmpipe(
@@ -183,18 +206,21 @@ module Processor(input clk, input rst,
    
    
    WBUnit WB(.WriteData(WriteData), .WP(WP),
-	     .isCall(signal[9]), .isLd(is_Ld_WB), .pc(0), .ldResult(DMResult_WB), .aluResult(aluResult_WB), .rd(rd_WB)
+	     .isCall(signal[9]), .isLd(is_Ld_WB), .pc(0),
+	     .ldResult(DMResult_WB), .aluResult(aluResult_WB), .rd(rd_WB)
 	     );
+   
+   WBEXTPipe wbextpipe(.clk(clk), .stall_WBEXT(stall_WBEXT), .rd_WB(rd_WB), .WriteData_WB(WriteData), .rd_EXT(rd_EXT), .WriteData_EXT(WriteData_EXT));
    
    ControlUnit CU(.signal(signal)
 		  ,.opcodeI(opcodeI));
    
    
    ForwardingUnit forwarding(.A(A_FWD), .B(B_FWD),
-                             .rd_DM(rd_DM), .rd_WB(rd_WB),
+                             .rd_DM(rd_DM), .rd_WB(rd_WB), .rd_EXT(rd_EXT),
                              .RP1_ALU(RP1_ALU), .RP2_ALU(RP2_ALU),
                              .A_ALU(A_ALU), .B_ALU(B_ALU),
-                             .result_DM(is_Ld_DM ? DMResult_DM : aluResult_DM), .result_WB(WriteData)
+                             .result_DM(is_Ld_DM ? DMResult_DM : aluResult_DM), .result_WB(WriteData), .result_EXT(WriteData_EXT)
    );
    
    Stall_Unit stallunit(
@@ -205,7 +231,8 @@ module Processor(input clk, input rst,
         .stall_IFOF(stall_IFOF),
         .stall_OFALU(stall_OFALU),
         .stall_ALUDM(stall_ALUDM),
-        .stall_DMWB(stall_DMWB)
+        .stall_DMWB(stall_DMWB),
+        .stall_WBEXT(stall_WBEXT)
    );
    
   //FrequencyDivider FD1(.clk(clk), .clock(clock));
