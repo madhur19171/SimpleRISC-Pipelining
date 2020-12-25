@@ -14,7 +14,7 @@ module OFUnit(stop, flush, immx,branchTarget,op1,op2, A, B,opcodeI, rd, RP1, RP2
    output stop;
   
 
-    integer i;
+   integer i;
    output [4:0] 	 RP1, RP2;
    wire [31:0] 	 signExtend;
    
@@ -43,7 +43,7 @@ module OFUnit(stop, flush, immx,branchTarget,op1,op2, A, B,opcodeI, rd, RP1, RP2
 //  .doutb(op2)  // output wire [31 : 0] doutb
 //);
 
-    assign stop = inst[31 : 27] == 5'b11111 && ~flush;
+    assign stop = inst[31 : 27] == 5'b11111 && ~flush;  //To avoid conflict when read and branch are very near
     assign RP1 = (isRet)?  31 : inst[20:16];
     assign RP2 = (isSt) ? inst[25:21] : inst[15:11];
     assign rd = inst[25:21];

@@ -34,7 +34,7 @@ module vio_wrapper_IM(
     
     InstructionMemory memory(.clka(clk), .addra(addr), .douta(data));
     
-vio_0 your_instance_name (
+vio_1 your_instance_name (
   .clk(clk),                // input wire clk
   .probe_in0(data),    // input wire [31 : 0] probe_in0
   .probe_out0(rst)  // output wire [0 : 0] probe_out0

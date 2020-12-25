@@ -24,6 +24,7 @@ module Stall_Unit(
     input DMdone,
     input is_Ld,
     input is_St,
+    input div_stall,
     input stop,
     output reg stall_IFOF,
     output reg stall_OFALU,
@@ -33,7 +34,7 @@ module Stall_Unit(
     );
     
     always @(*) begin
-        if(stop) begin
+        if(stop || div_stall) begin
             stall_IFOF = 1;
             stall_OFALU = 1;
             stall_ALUDM = 1;

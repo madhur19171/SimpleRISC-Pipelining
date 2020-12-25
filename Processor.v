@@ -20,8 +20,9 @@ module Processor(input clk, input rst,
    wire [22:1] signal;
    wire [5:0] opcodeI;
    wire       isBranchTaken, flagsE, flagsGT;
-   wire DoClk, pulse, clock;
+   wire DoClk, pulse;
    wire stop;
+   wire clock;
    
    //Reverting:
    //:rd
@@ -52,7 +53,7 @@ module Processor(input clk, input rst,
    wire [4 : 0] RP1_OF, RP2_OF, RP1_ALU, RP2_ALU;
    
    
-   wire stall_IFOF, stall_OFALU, stall_ALUDM, stall_DMWB, stall_WBEXT;
+   wire stall_IFOF, stall_OFALU, stall_ALUDM, stall_DMWB, stall_WBEXT, div_stall;
    wire is_Ld_OF, is_St_OF, is_Ld_ALU, is_St_ALU, is_Ld_DM, is_St_DM, is_Ld_WB;
    
    wire[31:0] immx_ALU;
@@ -64,7 +65,7 @@ module Processor(input clk, input rst,
    
    
    
-//    vio_1 vio (
+//    vio_0 vio (
 //  .clk(clk),                // input wire clk
 //  .probe_in0(pc_IF),    // input wire [31 : 0] probe_in0
 //  .probe_in1(inst_OF),    // input wire [31 : 0] probe_in1
@@ -79,7 +80,9 @@ module Processor(input clk, input rst,
    assign is_Ld_OF = signal[2];
    assign is_St_OF = signal[1];
    
-   IFUnit IF(.inst(inst_IF),.pc(pc_IF), .stop(stop),
+   
+   //IF Stall is messed up. When I stall IF, only PC is halted, the already buffered data in IM is still read for 1 clock cycle.
+   IFUnit IF(.inst(inst_IF),.pc(pc_IF), .stop(stop | div_stall),
 	     .clk(clock),.isBranchTaken(isBranchTaken),.branchPC(branchPC),.rst(rst),
 	     //Instruction Memory Interface
 	     .IMclka(IMclka), .IMaddra(IMaddra),
@@ -152,9 +155,9 @@ module Processor(input clk, input rst,
                     .isUBranch_ALU(isUBranch_ALU), .isBeq_ALU(isBeq_ALU), .flagsE(flagsE),
                     .isBgt_ALU(isBgt_ALU), .flagsGT(flagsGT));
                     
-   FlushUnit flushunit(.clk(clk), .isBranchTaken(isBranchTaken), .flush(flush));
+   FlushUnit flushunit(.clk(clock), .isBranchTaken(isBranchTaken), .flush(flush));
    
-   ALUUnit ALU(.immx(immx_ALU), .isImmediate(isImmediate_ALU),
+   ALUUnit_2 ALU(.immx(immx_ALU), .isImmediate(isImmediate_ALU), .clk(clock), .div_stall(div_stall),
                .aluResult(aluResult_ALU), .flagsE(flagsE), .flagsGT(flagsGT),
 	        .A_ALU(A_FWD), .B_ALU(B_FWD),  .aluSignals(aluSignals_ALU));
    
@@ -210,7 +213,7 @@ module Processor(input clk, input rst,
 	     .ldResult(DMResult_WB), .aluResult(aluResult_WB), .rd(rd_WB)
 	     );
    
-   WBEXTPipe wbextpipe(.clk(clk), .stall_WBEXT(stall_WBEXT), .rd_WB(rd_WB), .WriteData_WB(WriteData), .rd_EXT(rd_EXT), .WriteData_EXT(WriteData_EXT));
+   WBEXTPipe wbextpipe(.clk(clock), .stall_WBEXT(stall_WBEXT), .rd_WB(rd_WB), .WriteData_WB(WriteData), .rd_EXT(rd_EXT), .WriteData_EXT(WriteData_EXT));
    
    ControlUnit CU(.signal(signal)
 		  ,.opcodeI(opcodeI));
@@ -228,6 +231,7 @@ module Processor(input clk, input rst,
         .stop(stop),
         .is_Ld(is_Ld_DM),
         .is_St(is_St_DM),
+        .div_stall(div_stall),
         .stall_IFOF(stall_IFOF),
         .stall_OFALU(stall_OFALU),
         .stall_ALUDM(stall_ALUDM),
@@ -237,7 +241,24 @@ module Processor(input clk, input rst,
    
   //FrequencyDivider FD1(.clk(clk), .clock(clock));
   assign clock = clk;
+//  always@(posedge clk)
+//    clock <= ~clock;
+  
+//  clk_wiz_0 divider
+//   (
+//    // Clock out ports
+//    .clk_out1(clock),     // output clk_out1
+//   // Clock in ports
+//    .clk_in1(clk));   
+   integer mcd1;
+   initial begin
+        mcd1 = $fopen("D:/Work/xyz.txt", "wb");
+       #2000 $fclose(mcd1);
+   end
    
+   always@(posedge clk)begin
+        $fwriteb(mcd1, "Number is %d\n", op1_OF);
+   end
 endmodule // DFF
 
 

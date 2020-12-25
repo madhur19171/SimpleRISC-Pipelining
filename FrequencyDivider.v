@@ -4,10 +4,29 @@
 
 module FrequencyDivider(
     input clk,
-    output reg clock = 0
+    output clock
     );
-    parameter N = 31;
-    parameter limit = 2500000;
+    parameter N = 2;
+
+    wire clk_5M; 
+    assign clk_5M = clk;
+    
+    
+//        clk_wiz_0 divider
+//   (
+//    // Clock out ports
+//    .clk_out1(clk_5M),     // output clk_out1
+//   // Clock in ports
+//    .clk_in1(clk));   
+    
+    clock_divider #(.N(N))clockDivide(.clk_in(clk_5M), .clk_out(clock));
+        
+        
+endmodule
+
+/*
+parameter N = 31;
+    parameter limit = 5;
     //parameter limit = 27'd1250;
     reg [N:0] count; 
     wire clk_5M; 
@@ -20,8 +39,7 @@ module FrequencyDivider(
    // Clock in ports
     .clk_in1(clk));   
     
-    
-    reg [31:0] count_state = 0, count_next = 0;
+    reg [1:0] count_state = 0, count_next = 0;
     
     always @(posedge clk_5M)
         if(count_next == limit/2)begin
@@ -37,5 +55,4 @@ module FrequencyDivider(
     always @(*)
         count_next <= count_state + 1;
         
-        
-endmodule
+*/
