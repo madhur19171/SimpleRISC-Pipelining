@@ -16,7 +16,7 @@ module WBUnit(WriteData, WP,
     default : WriteData <= 0;
 	endcase // case ({isCall, isLd})
      end
-   assign WP = (isCall) ? 31 : rd;
+   assign WP = (isCall) ? 31 : rd;//r31 is the link register
 endmodule // DFF
 
 

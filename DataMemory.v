@@ -46,7 +46,8 @@ module DM #(parameter N = 7)(
 
 
 initial begin
-        for(i = 0; i <= 2 ** N - 1; i = i + 1)begin
+        $readmemb("data.mem", datamemory);
+        for(i = 5; i <= 2 ** N - 1; i = i + 1)begin
             datamemory[i] = 0;
         end
    end
@@ -84,5 +85,8 @@ initial begin
         
         
     assign done = state;
+    
+    always@(posedge clka)
+        $writememh("D:/Work/data.mem", datamemory);
     
 endmodule

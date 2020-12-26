@@ -31,6 +31,10 @@ module OFALUPipe(
     input[31:0] pc_OF,
     output reg[31:0] pc_ALU = 0,
     input [31:0]inst_OF,
+    input isCall_OF,
+    output reg isCall_ALU = 0,
+    input isRet_OF,
+    output reg isRet_ALU = 0,
     input isBeq_OF,
     output reg isBeq_ALU = 0,
     input isBgt_OF,
@@ -70,6 +74,8 @@ module OFALUPipe(
                 isImmediate_ALU <= isImmediate_OF;
                 immx_ALU <= immx_OF;
                 pc_ALU <= pc_OF;
+                isCall_ALU <= isCall_OF;
+                isRet_ALU <= isRet_OF;
                 isBeq_ALU <= isBeq_OF;
                 isBgt_ALU <= isBgt_OF;
                 isUBranch_ALU <= isUBranch_OF;
@@ -91,6 +97,8 @@ module OFALUPipe(
                 immx_ALU <= 0;
                 pc_ALU <= 0;
                 isBeq_ALU <= 0;
+                isCall_ALU <= 0;
+                isRet_ALU <= 0;
                 isBgt_ALU <= 0;
                 isUBranch_ALU <= 0;
                 inst_ALU <= 0;

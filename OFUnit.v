@@ -64,7 +64,7 @@ module OFUnit(stop, flush, immx,branchTarget,op1,op2, A, B,opcodeI, rd, RP1, RP2
         
    assign signExtend = {{5{inst[26]}}, inst[26:0]};
    assign branchTarget = pc + signExtend;
-   assign immx = {{16{inst[15]}}, inst[15:0]};
+   assign immx = inst[31:30] == 2'b10 ? inst[26:0] : {{16{inst[15]}}, inst[15:0]};//If branch instruction, then all 26 bits are the immediate
    assign opcodeI = {inst[31:27], inst[26]};
 endmodule // DFF
 

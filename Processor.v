@@ -31,7 +31,7 @@ module Processor(input clk, input rst,
    //Data Memory Interfacing Declarations
 	      
 
-   wire[31:0] inst_IF, inst_OF, inst_ALU, inst_DM, inst_WB, pc_IF, pc_OF, pc_ALU;
+   wire[31:0] inst_IF, inst_OF, inst_ALU, inst_DM, inst_WB, pc_IF, pc_OF, pc_ALU, pc_DM, pc_WB;
    
    wire [31 : 0] op1_OF, op1_ALU, op2_OF, op2_ALU;
    wire [12 : 0] aluSignals_OF, aluSignals_ALU;
@@ -60,6 +60,8 @@ module Processor(input clk, input rst,
    wire isImmediate_ALU;
    
    wire isBeq_OF, isBeq_ALU, isBgt_OF, isBgt_ALU, isUBranch_OF, isUBranch_ALU;
+   wire isCall_OF, isCall_ALU, isCall_DM, isCall_WB;
+   wire isRet_OF, isRet_ALU;
    
    wire flush;
    
@@ -98,15 +100,18 @@ module Processor(input clk, input rst,
 	           .pc_OF(pc_OF)//
 	     );
 	     
-   OFUnit OF(.stop(stop), .flush(flush), .immx(immx),.branchTarget(branchTarget),.op1(op1_OF),.op2(op2_OF), .A(A_OF), .B(B_OF),
-             .opcodeI(opcodeI), .rd(rd_OF), .RP1(RP1_OF), .RP2(RP2_OF),
-	         .clk(clock) , .pc(pc_OF),.inst(inst_OF), .isImmediate(signal[6]),
-	         .isSt(is_St_OF),.isRet(signal[5]),.isWb(isWb_WB),
-	         .WriteData(WriteData),.WP(WP));
-	     
 	    assign isBeq_OF = signal[3];
 	    assign isBgt_OF = signal[4];
 	    assign isUBranch_OF = signal[8];
+	    assign isCall_OF = signal[9];
+	    assign isRet_OF = signal[5];
+	     
+   OFUnit OF(.stop(stop), .flush(flush), .immx(immx),.branchTarget(branchTarget),.op1(op1_OF),.op2(op2_OF), .A(A_OF), .B(B_OF),
+             .opcodeI(opcodeI), .rd(rd_OF), .RP1(RP1_OF), .RP2(RP2_OF),
+	         .clk(clock) , .pc(pc_OF),.inst(inst_OF), .isImmediate(signal[6]),
+	         .isSt(is_St_OF),.isRet(isRet_OF),.isWb(isWb_WB),
+	         .WriteData(WriteData),.WP(WP));
+	     
 	    
         OFALUPipe ofalupipe(
                 .clk(clock),//
@@ -119,6 +124,10 @@ module Processor(input clk, input rst,
                 .pc_ALU(pc_ALU),
                 .inst_OF(inst_OF),
                 .inst_ALU(inst_ALU),
+                .isCall_OF(isCall_OF),
+                .isCall_ALU(isCall_ALU),
+                .isRet_OF(isRet_OF),
+                .isRet_ALU(isRet_ALU),
                 .isBeq_OF(isBeq_OF),
                 .isBeq_ALU(isBeq_ALU),
                 .isBgt_OF(isBgt_OF),
@@ -151,8 +160,8 @@ module Processor(input clk, input rst,
         );
         
    BranchUnit BU(.branchPC(branchPC), .isBranchTaken(isBranchTaken),
-                    .pc_ALU(pc_ALU), .immx_ALU(immx_ALU),
-                    .isUBranch_ALU(isUBranch_ALU), .isBeq_ALU(isBeq_ALU), .flagsE(flagsE),
+                    .pc_ALU(pc_ALU), .A_ALU(A_FWD), .immx_ALU(immx_ALU),
+                    .isRet_ALU(isRet_ALU), .isUBranch_ALU(isUBranch_ALU), .isBeq_ALU(isBeq_ALU), .flagsE(flagsE),
                     .isBgt_ALU(isBgt_ALU), .flagsGT(flagsGT));
                     
    FlushUnit flushunit(.clk(clock), .isBranchTaken(isBranchTaken), .flush(flush));
@@ -165,6 +174,8 @@ module Processor(input clk, input rst,
         .clk(clock),//
         .inst_ALU(inst_ALU),
         .inst_DM(inst_DM),
+        .pc_ALU(pc_ALU),
+        .pc_DM(pc_DM),
         .stall_ALUDM(stall_ALUDM),
         .is_Ld_ALU(is_Ld_ALU),
         .is_Ld_DM(is_Ld_DM),
@@ -179,7 +190,9 @@ module Processor(input clk, input rst,
         .rd_ALU(rd_ALU),//
         .rd_DM(rd_DM),//
         .isWb_ALU(isWb_ALU),//
-        .isWb_DM(isWb_DM)//
+        .isWb_DM(isWb_DM),//
+        .isCall_ALU(isCall_ALU),//
+        .isCall_DM(isCall_DM)//
     );
    
    MAUnit DM(.data(DMResult_DM), 
@@ -194,6 +207,8 @@ module Processor(input clk, input rst,
         .clk(clock),//
         .inst_DM(inst_DM),
         .inst_WB(inst_WB),
+        .pc_DM(pc_DM),
+        .pc_WB(pc_WB),
         .stall_DMWB(stall_DMWB),
         .is_Ld_DM(is_Ld_DM),
         .is_Ld_WB(is_Ld_WB),
@@ -204,12 +219,14 @@ module Processor(input clk, input rst,
         .rd_DM(rd_DM),//
         .rd_WB(rd_WB),//
         .isWb_DM(isWb_DM),//
-        .isWb_WB(isWb_WB)//
+        .isWb_WB(isWb_WB),//
+        .isCall_DM(isCall_DM),//
+        .isCall_WB(isCall_WB)//
    );
    
    
    WBUnit WB(.WriteData(WriteData), .WP(WP),
-	     .isCall(signal[9]), .isLd(is_Ld_WB), .pc(0),
+	     .isCall(isCall_WB), .isLd(is_Ld_WB), .pc(pc_WB),
 	     .ldResult(DMResult_WB), .aluResult(aluResult_WB), .rd(rd_WB)
 	     );
    
@@ -250,15 +267,15 @@ module Processor(input clk, input rst,
 //    .clk_out1(clock),     // output clk_out1
 //   // Clock in ports
 //    .clk_in1(clk));   
-   integer mcd1;
-   initial begin
-        mcd1 = $fopen("D:/Work/xyz.txt", "wb");
-       #2000 $fclose(mcd1);
-   end
+//   integer mcd1;
+//   initial begin
+//        mcd1 = $fopen("D:/Work/xyz.txt", "wb");
+//       #2000 $fclose(mcd1);
+//   end
    
-   always@(posedge clk)begin
-        $fwriteb(mcd1, "Number is %d\n", op1_OF);
-   end
+//   always@(posedge clk)begin
+//        $fwriteb(mcd1, "Number is %d\n", op1_OF);
+//   end
 endmodule // DFF
 
 

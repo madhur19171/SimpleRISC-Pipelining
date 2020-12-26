@@ -23,12 +23,14 @@
 module ALUDMPipe(
     input clk,
     input [31:0]inst_ALU,
-    output reg [31:0]inst_DM,
+    output reg [31:0]inst_DM = 0,
+    input [31:0]pc_ALU,
+    output reg [31:0]pc_DM = 0,
     input stall_ALUDM,
     input is_Ld_ALU,
-    output reg is_Ld_DM,
+    output reg is_Ld_DM = 0,
     input is_St_ALU,
-    output reg is_St_DM,
+    output reg is_St_DM = 0,
     input [31:0] aluResult_ALU,
     output reg [31:0] aluResult_DM = 0,
     input [31:0] op2_ALU,
@@ -39,12 +41,15 @@ module ALUDMPipe(
     input [4 : 0] rd_ALU,
     output reg [4:0] rd_DM = 0,
     input isWb_ALU,
-    output reg isWb_DM = 0
+    output reg isWb_DM = 0,
+    input isCall_ALU,
+    output reg isCall_DM = 0
     );
     
     always @(posedge clk)begin
     if(~stall_ALUDM) begin
             inst_DM <= inst_ALU;
+            pc_DM <= pc_ALU;
             is_Ld_DM <= is_Ld_ALU;
             is_St_DM <= is_St_ALU;
             aluResult_DM <= aluResult_ALU;
@@ -52,6 +57,7 @@ module ALUDMPipe(
             B_DM <= B_ALU;
             rd_DM <= rd_ALU;
             isWb_DM <= isWb_ALU;
+            isCall_DM <= isCall_ALU;
         end
     end
 endmodule

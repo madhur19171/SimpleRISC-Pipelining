@@ -30,7 +30,7 @@ module IM #(parameter N = 7)(
     reg [31 : 0] instructionmemory[2 ** N - 1 : 0];
     
     initial
-        $readmemb("Prime Check.mem", instructionmemory);
+        $readmemb("PrimeMemory.mem", instructionmemory);
     
     always @(posedge clka) begin
         douta <= instructionmemory[addra];
