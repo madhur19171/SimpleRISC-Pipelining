@@ -1,9 +1,9 @@
 `timescale 1s/1ms
 module IFUnit(inst,pc,
-          clk,  stop,
+          clk,  stop, stall_IFOF,
 	      isBranchTaken,branchPC,rst,
 	      //Instruction Memory Interface:
-	      IMclka, IMaddra,
+	      IMclka, IMaddra, IMena,
 	      IMdouta
 	      );
 	      
@@ -12,14 +12,16 @@ module IFUnit(inst,pc,
    input [31:0] branchPC;
    output [31:0] inst;
    output reg [31:0] 	    pc = 0;
-   input stop;
+   input stop, stall_IFOF;
    
    //To be dent to Instruction Memory:
    input [31 : 0] IMdouta;
    output [6 : 0] IMaddra;
    output IMclka;
+   output IMena;
    
    reg stopped = 0;
+   reg [31:0] nextPC;
    
    //Instruction Memory Ports Assignmnets
    assign IMclka = clk;     //IM is triggered to read instruction only on 
@@ -28,23 +30,23 @@ module IFUnit(inst,pc,
    
    
    assign inst = IMdouta;       //Data received from IM is the Instruction and assigned to inst
+
+    always@(posedge clk)
+        pc <= nextPC;
    
    
-   always @(posedge clk, posedge rst) begin//add posedge stop for better functionality
-      if(rst)
-         pc <= 0;
-      else if(isBranchTaken)
-         pc <= branchPC;
-      else if(stop) begin  //Stops PC increment on Read Instruction
-            if(~stopped) begin
-                    pc <= pc - 1;  //This way IM will read the previous instruction now
-                    stopped <= 1;   //The importance of this can be understood by commenting out this if else block
-                end
-            else pc <= pc;
-         end
-      else begin
-            pc <= pc + 1;
-            stopped = 0;
-         end
+   always@(*)begin
+        if(rst)
+            nextPC = 0;
+        else if(isBranchTaken)
+            nextPC = branchPC;
+        else if(stop || stall_IFOF)//Stall the PC increment on load or division stall
+            nextPC = pc;
+        else
+            nextPC = pc + 1;
    end
+   
+   //The IM will not produce new instruction if the pipeline is stalled due to division or load
+    assign IMena = ~(stall_IFOF || stop);
+    
 endmodule

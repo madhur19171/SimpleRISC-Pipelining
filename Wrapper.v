@@ -30,7 +30,7 @@ module Wrapper(
     wire [31:0] DMdina, DMdouta;
     
     //Instruction Memory Interface
-    wire IMclka;
+    wire IMclka, IMena;
     wire [6 : 0] IMaddra;
     wire [31 : 0] IMdouta;
     
@@ -44,7 +44,7 @@ module Wrapper(
         
         //IM Interface
         .IMdouta(IMdouta),
-        .IMclka(IMclka), .IMaddra(IMaddra)
+        .IMclka(IMclka), .IMena(IMena), .IMaddra(IMaddra)
     );
     
     DM datamemory(
@@ -55,6 +55,7 @@ module Wrapper(
     
     IM instruction_memory(
     .clka(IMclka),
+    .ena(IMena),
     .addra(IMaddra),
     .douta(IMdouta)
     );

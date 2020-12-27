@@ -7,7 +7,7 @@ module Processor(input clk, input rst,
    input [31 : 0] DMdouta,
    input DMdone,
         //Instruction Memory Interfacing components:
-   output IMclka,
+   output IMclka, IMena,
    output [6 : 0] IMaddra,
    input [31 : 0] IMdouta
     );
@@ -84,10 +84,10 @@ module Processor(input clk, input rst,
    
    
    //IF Stall is messed up. When I stall IF, only PC is halted, the already buffered data in IM is still read for 1 clock cycle.
-   IFUnit IF(.inst(inst_IF),.pc(pc_IF), .stop(stop | div_stall),
+   IFUnit IF(.inst(inst_IF),.pc(pc_IF), .stop(stop | div_stall), .stall_IFOF(stall_IFOF),
 	     .clk(clock),.isBranchTaken(isBranchTaken),.branchPC(branchPC),.rst(rst),
 	     //Instruction Memory Interface
-	     .IMclka(IMclka), .IMaddra(IMaddra),
+	     .IMclka(IMclka), .IMena(IMena), .IMaddra(IMaddra),
 	     .IMdouta(IMdouta)
 	     );
 	     

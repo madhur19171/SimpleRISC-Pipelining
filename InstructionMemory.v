@@ -22,6 +22,7 @@
 
 module IM #(parameter N = 7)(
     input clka,
+    input ena,
     input[N - 1 : 0] addra,
     output reg [31:0] douta = 0
     );
@@ -33,6 +34,7 @@ module IM #(parameter N = 7)(
         $readmemb("PrimeMemory.mem", instructionmemory);
     
     always @(posedge clka) begin
-        douta <= instructionmemory[addra];
+        if(ena)
+            douta <= instructionmemory[addra];
     end
 endmodule
