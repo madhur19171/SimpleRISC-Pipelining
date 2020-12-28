@@ -22,7 +22,7 @@ module Processor(input clk, input rst,
    wire       isBranchTaken, flagsE, flagsGT;
    wire DoClk, pulse;
    wire stop;
-   wire clock;
+   reg clock = 0;
    
    //Reverting:
    //:rd
@@ -257,9 +257,9 @@ module Processor(input clk, input rst,
    );
    
   //FrequencyDivider FD1(.clk(clk), .clock(clock));
-  assign clock = clk;
-//  always@(posedge clk)
-//    clock <= ~clock;
+  //assign clock = clk;
+  always@(posedge clk)
+    clock <= ~clock;
   
 //  clk_wiz_0 divider
 //   (

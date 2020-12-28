@@ -4,7 +4,7 @@ module testbench;
    reg clk, rst;
    Wrapper DUT(clk, rst);
    always begin
-     #5 clk = ~clk;
+     #8 clk = ~clk;
    end
 
    

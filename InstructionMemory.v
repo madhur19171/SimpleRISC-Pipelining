@@ -31,7 +31,7 @@ module IM #(parameter N = 7)(
     reg [31 : 0] instructionmemory[2 ** N - 1 : 0];
     
     initial
-        $readmemb("PrimeMemory.mem", instructionmemory);
+        $readmemb("MatrixOperation.mem", instructionmemory);
     
     always @(posedge clka) begin
         if(ena)

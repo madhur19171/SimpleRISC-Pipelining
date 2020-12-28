@@ -46,8 +46,8 @@ module DM #(parameter N = 7)(
 
 
 initial begin
-        $readmemb("data.mem", datamemory);
-        for(i = 5; i <= 2 ** N - 1; i = i + 1)begin
+        $readmemh("data.mem", datamemory);
+        for(i = 8; i <= 2 ** N - 1; i = i + 1)begin
             datamemory[i] = 0;
         end
    end
