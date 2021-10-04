@@ -19,7 +19,7 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
-
+//!!Serious!! WB-->MA forwarding to be done for store operations.
 module ForwardingUnit(
 output reg  [31 : 0]A = 0,
 output reg  [31 : 0]B = 0,
